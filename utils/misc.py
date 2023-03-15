@@ -12,7 +12,7 @@ def get_args():
 
     parser = argparse.ArgumentParser("Multiagent RL with OpenAI's MPE")
 
-    parser.add_argument("--scenario_name", type=str, default="simple_push", help="name of the scenario",
+    parser.add_argument("--scenario_name", type=str, default="simple_tag", help="name of the scenario",
                         choices=['simple_adversary', 'simple_crypto', 'simple_push',
                         'simple_reference', 'simple_speaker_listener', 'simple_spread',
                         'simple_tag', 'simple_world_comm', 'simple'])
@@ -56,50 +56,58 @@ def make_env(args, discrete_action=False, benchmark=False):
     scenario = scenarios.load(args.scenario_name + '.py').Scenario()
     world = scenario.make_world()
     if benchmark:
-        env = MultiAgentEnv(world, scenario.reset_world, scenario.reward,
-                            scenario.observation, scenario.benchmark_data,
-                            discrete_action=discrete_action)
+        env = MultiAgentEnv(world, scenario.reset_world, scenario.reward, scenario.observation, scenario.benchmark_data)
     else:
-        env = MultiAgentEnv(world, scenario.reset_world, scenario.reward,
-                            scenario.observation, discrete_action=discrete_action)
+        env = MultiAgentEnv(world, scenario.reset_world, scenario.reward, scenario.observation)
 
     return env
 
 
 def soft_update(target, source, tau):
+
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
 
 
 def hard_update(target, source):
+
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data.copy_(param.data)
 
 
 def onehot_from_logits(logits, eps=0.0):
+
     argmax_acs = (logits == logits.max(1, keepdim=True)[0]).float()
+
     if eps == 0.0:
         return argmax_acs
 
     rand_acs = Variable(torch.eye(logits.shape[1])[[np.random.choice(
                 range(logits.shape[1]), size=logits.shape[0])]], requires_grad=False)
-    return torch.stack([argmax_acs[i] if r > eps else rand_acs[i] for i, r in
-                        enumerate(torch.rand(logits.shape[0]))])
+    
+    return torch.stack([argmax_acs[i] if r > eps else rand_acs[i] for i, r in enumerate(torch.rand(logits.shape[0]))])
 
 
 def sample_gumbel(shape, eps=1e-20, tens_type=torch.FloatTensor):
+
     U = Variable(tens_type(*shape).uniform_(), requires_grad=False)
+
     return -torch.log(-torch.log(U + eps) + eps)
 
 
 def gumbel_softmax_sample(logits, temperature):
+
     y = logits + sample_gumbel(logits.shape, tens_type=type(logits.data))
+
     return F.softmax(y / temperature, dim=1)
 
 
 def gumbel_softmax(logits, temperature=1.0, hard=False):
+
     y = gumbel_softmax_sample(logits, temperature)
+
     if hard:
         y_hard = onehot_from_logits(y)
         y = (y_hard - y).detach() + y
+        
     return y

@@ -2,14 +2,15 @@ import os
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.replay_buffer import ReplayBuffer
 from algorithm.policy import Policy
+from utils.replay_buffer import ReplayBuffer
 
 
 class Runner:
     def __init__(self, args, env):
         self.args = args
         self.env = env
+
         self.n_agents = len(self.env.agents)
         self.noise = self.args.noise_rate
         self.min_noise = self.args.min_noise_rate

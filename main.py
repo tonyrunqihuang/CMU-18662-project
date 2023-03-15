@@ -1,5 +1,5 @@
-from utils.misc import make_env, get_args, set_seed
 from runner import Runner
+from utils.misc import make_env, get_args, set_seed
 
 
 if __name__ == '__main__':
