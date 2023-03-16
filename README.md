@@ -5,6 +5,7 @@ Multi-agent Reinforcement Learning
 1. PyTorch
 2. OpenAI Gym (version=0.10.5): https://github.com/openai/gym
 3. OpenAI Multi-Particle Environment: https://github.com/openai/multiagent-particle-envs
+4. PettingZoo: https://github.com/Farama-Foundation/PettingZoo
 
 # Sources:
 1. Baseline implementation (MADDPG): https://github.com/shariqiqbal2810/maddpg-pytorch

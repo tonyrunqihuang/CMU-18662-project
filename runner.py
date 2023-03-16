@@ -1,3 +1,4 @@
+import numpy as np
 from maddpg import MADDPG
 
 
@@ -6,6 +7,7 @@ def train(args, env, dim_info):
     maddpg =  MADDPG(dim_info, args.buffer_capacity, args.device)
     obs = env.reset()
     step = 0
+    episode_rewards = {agent_id: np.zeros(args.episode_num) for agent_id in env.agents}
 
     for episode in range(args.episode_num):
         obs = env.reset()
@@ -29,3 +31,6 @@ def train(args, env, dim_info):
                 maddpg.update_target(args.tau)
 
             obs = next_obs
+
+        for agent_id, r in agent_reward.items():  # record reward
+            episode_rewards[agent_id][episode] = r
