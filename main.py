@@ -1,13 +1,12 @@
-from runner import Runner
-from utils.misc import make_env, get_args, set_seed
+from runner import train
+from maddpg import MADDPG
+from helper import make_env, get_args, set_seed
 
 
-if __name__ == '__main__':
-    set_seed(78)
-    args = get_args()
-    env = make_env(args)
-    runner = Runner(args, env)
-    if args.evaluate:
-        ave_return, norm_return = runner.evaluate(render=False)
-    else:
-        runner.run()
+# if __name__ == '__main__':
+
+set_seed(78)
+args = get_args()
+env, dim_info = make_env(args)
+
+train(args, env, dim_info)
