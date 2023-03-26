@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--episode-length', type=int, default=50, help='steps per episode')
 
     args = parser.parse_args()
-
+    args.device='cpu'
     model_dir = os.path.join('./results', args.folder)
     assert os.path.exists(model_dir)
     gif_dir = os.path.join(model_dir, 'gif')
@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     env, dim_info = make_env(args)
     maddpg = MADDPG.load(dim_info, os.path.join(model_dir, 'model.pt'))
-
+    print('Model loaded')
     agent_num = env.num_agents
     # reward of each episode of each agent
     episode_rewards = {agent: np.zeros(args.episode_num) for agent in env.agents}
