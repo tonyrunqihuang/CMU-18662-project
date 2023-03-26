@@ -94,8 +94,9 @@ class MADDPG:
     @classmethod
     def load(cls, dim_info, file):
         """init maddpg using the model saved in `file`"""
-        instance = cls(dim_info, 0, 0)
-        data = torch.load(file)
+        device = torch.device('cpu')
+        instance = cls(dim_info, 0, device)
+        data = torch.load(file,map_location=device)
         for agent_id, agent in instance.agents.items():
             agent.actor.load_state_dict(data[agent_id])
         return instance
