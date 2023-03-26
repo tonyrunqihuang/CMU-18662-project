@@ -3,7 +3,8 @@ import torch
 import torch.nn.functional as F
 from agent import Agent
 from buffer import Buffer
-
+import os
+import pickle
 
 class MADDPG:
     """A MADDPG(Multi Agent Deep Deterministic Policy Gradient) agent"""
@@ -12,9 +13,13 @@ class MADDPG:
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         self.agents = {}
         self.buffers = {}
-
+        self.device=device
         for agent_id, (obs_dim, act_dim) in dim_info.items():
-            self.agents[agent_id] = Agent(obs_dim, act_dim, global_obs_act_dim)
+            if 'adversary' in agent_id:
+                typ='adversary'
+            else:
+                typ='agent'
+            self.agents[agent_id] = Agent(obs_dim, act_dim, global_obs_act_dim,device,typ)
             self.buffers[agent_id] = Buffer(capacity, obs_dim, act_dim, device)
 
         self.dim_info = dim_info
@@ -22,9 +27,9 @@ class MADDPG:
     def select_action(self, obs):
         actions = {}
         for agent, o in obs.items():
-            o = torch.from_numpy(o).unsqueeze(0).float()
+            o = torch.from_numpy(o).unsqueeze(0).float().to(self.device)
             a = self.agents[agent].action(o)
-            actions[agent] = a.squeeze(0).detach().numpy()
+            actions[agent] = a.squeeze(0).detach().cpu().numpy()
         return actions
     
     def add(self, obs, action, reward, next_obs, done):
@@ -78,3 +83,19 @@ class MADDPG:
         for agent in self.agents.values():
             self.soft_update(agent.actor, agent.target_actor, tau)
             self.soft_update(agent.critic, agent.target_critic, tau)
+    def save(self, reward,res_dir):
+        """save actor parameters of all agents and training reward to `res_dir`"""
+        torch.save(
+            {name: agent.actor.state_dict() for name, agent in self.agents.items()},  # actor parameter
+            os.path.join(res_dir, 'model.pt')
+        )
+        with open(os.path.join(res_dir, 'rewards.pkl'), 'wb') as f:  # save training data
+            pickle.dump({'rewards': reward}, f)
+    @classmethod
+    def load(cls, dim_info, file):
+        """init maddpg using the model saved in `file`"""
+        instance = cls(dim_info, 0, 0)
+        data = torch.load(file)
+        for agent_id, agent in instance.agents.items():
+            agent.actor.load_state_dict(data[agent_id])
+        return instance

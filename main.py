@@ -9,4 +9,6 @@ if __name__ == '__main__':
     args = get_args()
     env, dim_info = make_env(args)
 
+    args.device = 'cuda' 
+    
     train(args, env, dim_info)

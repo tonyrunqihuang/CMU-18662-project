@@ -9,13 +9,13 @@ from networks import MLP
 
 
 class Agent:
-    def __init__(self, actor_in_dim, actor_out_dim, critic_in_dim, lr=0.0003, hidden_dim=64):
+    def __init__(self, actor_in_dim, actor_out_dim, critic_in_dim,device,typ=None, lr=0.0003, hidden_dim=64):
 
-        self.actor = MLP(input_dim=actor_in_dim, output_dim=actor_out_dim)
-        self.critic = MLP(input_dim=critic_in_dim, output_dim=1)
+        self.actor = MLP(input_dim=actor_in_dim, output_dim=actor_out_dim).to(device)
+        self.critic = MLP(input_dim=critic_in_dim, output_dim=1).to(device)
         self.target_actor = deepcopy(self.actor)
         self.target_critic = deepcopy(self.critic)
-
+        self.typ = typ
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=lr)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=lr)
 
