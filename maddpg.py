@@ -1,10 +1,12 @@
+import os
+import pickle
 import numpy as np
 import torch
 import torch.nn.functional as F
 from agent import Agent
 from buffer import Buffer
-import os
-import pickle
+
+MSELoss = torch.nn.MSELoss()
 
 class MADDPG:
     """A MADDPG(Multi Agent Deep Deterministic Policy Gradient) agent"""
@@ -67,7 +69,7 @@ class MADDPG:
             next_target_critic_value = agent.target_critic_value(list(next_obs.values()), list(next_act.values()))
             target_value = reward[agent_id] + gamma * next_target_critic_value * (1 - done[agent_id])
 
-            critic_loss = F.mse_loss(critic_value, target_value.detach(), reduction='mean')
+            critic_loss = MSELoss(critic_value, target_value.detach())
             agent.update_critic(critic_loss)
 
             # actor update
@@ -83,6 +85,7 @@ class MADDPG:
         for agent in self.agents.values():
             self.soft_update(agent.actor, agent.target_actor, tau)
             self.soft_update(agent.critic, agent.target_critic, tau)
+
     def save(self, reward,res_dir):
         """save actor parameters of all agents and training reward to `res_dir`"""
         torch.save(
@@ -91,6 +94,7 @@ class MADDPG:
         )
         with open(os.path.join(res_dir, 'rewards.pkl'), 'wb') as f:  # save training data
             pickle.dump({'rewards': reward}, f)
+
     @classmethod
     def load(cls, dim_info, file):
         """init maddpg using the model saved in `file`"""
