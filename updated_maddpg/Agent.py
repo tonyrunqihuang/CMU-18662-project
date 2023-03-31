@@ -10,7 +10,7 @@ from torch.optim import Adam
 class Agent:
     """Agent that can interact with environment from pettingzoo"""
 
-    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr):
+    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr,typ=None):
         self.actor = MLPNetwork(obs_dim, act_dim)
 
         # critic input all the observations and actions
@@ -20,6 +20,7 @@ class Agent:
         self.critic_optimizer = Adam(self.critic.parameters(), lr=critic_lr)
         self.target_actor = deepcopy(self.actor)
         self.target_critic = deepcopy(self.critic)
+        self.typ=typ
 
     @staticmethod
     def gumbel_softmax(logits, tau=1.0, eps=1e-20):
