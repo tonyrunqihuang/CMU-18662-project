@@ -1,16 +1,13 @@
+import torch
+from torch.optim import Adam
+from torch import nn, Tensor
+import torch.nn.functional as F
 from copy import deepcopy
 from typing import List
-
-import torch
-import torch.nn.functional as F
-from torch import nn, Tensor
-from torch.optim import Adam
-
+from network import MLPNetwork
 
 class Agent:
-    """Agent that can interact with environment from pettingzoo"""
-
-    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr,typ=None):
+    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, typ=None):
         self.actor = MLPNetwork(obs_dim, act_dim)
 
         # critic input all the observations and actions
@@ -72,27 +69,3 @@ class Agent:
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.critic.parameters(), 0.5)
         self.critic_optimizer.step()
-
-
-class MLPNetwork(nn.Module):
-    def __init__(self, in_dim, out_dim, hidden_dim=64, non_linear=nn.ReLU()):
-        super(MLPNetwork, self).__init__()
-
-        self.net = nn.Sequential(
-            nn.Linear(in_dim, hidden_dim),
-            non_linear,
-            nn.Linear(hidden_dim, hidden_dim),
-            non_linear,
-            nn.Linear(hidden_dim, out_dim),
-        ).apply(self.init)
-
-    @staticmethod
-    def init(m):
-        """init parameter of the module"""
-        gain = nn.init.calculate_gain('relu')
-        if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight, gain=gain)
-            m.bias.data.fill_(0.01)
-
-    def forward(self, x):
-        return self.net(x)

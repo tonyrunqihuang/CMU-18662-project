@@ -1,14 +1,13 @@
-import logging
 import os
+import logging
 import pickle
-
 import numpy as np
 import torch
 import torch.nn.functional as F
 
-from Agent import Agent
-from Buffer import Buffer
-
+from agent import Agent
+from buffer import Buffer
+from mixer import QMIX
 
 def setup_logger(filename):
     """ set up logger with filename. """
@@ -24,24 +23,25 @@ def setup_logger(filename):
     logger.addHandler(handler)
     return logger
 
-
-class MADDPG:
-    """A MADDPG(Multi Agent Deep Deterministic Policy Gradient) agent"""
-
+class Policy:
     def __init__(self, dim_info, capacity, batch_size, actor_lr, critic_lr, res_dir):
         # sum all the dims of each agent to get input dim for critic
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         # create Agent(actor-critic) and replay buffer for each agent
         self.agents = {}
         self.buffers = {}
+        
         for agent_id, (obs_dim, act_dim) in dim_info.items():
             self.agents[agent_id] = Agent(obs_dim, act_dim, global_obs_act_dim, actor_lr, critic_lr)
             self.buffers[agent_id] = Buffer(capacity, obs_dim, act_dim, 'cpu')
+
+        # create mixer for agents using qmix
+        self.mixer = QMIX(dim_info, self.agents)
         self.dim_info = dim_info
 
         self.batch_size = batch_size
         self.res_dir = res_dir  # directory to save the training result
-        self.logger = setup_logger(os.path.join(res_dir, 'maddpg.log'))
+        # self.logger = setup_logger(os.path.join(res_dir, 'maddpg.log'))
 
     def add(self, obs, action, reward, next_obs, done):
         # NOTE that the experience is a dict with agent name as its key
@@ -83,34 +83,68 @@ class MADDPG:
         for agent, o in obs.items():
             o = torch.from_numpy(o).unsqueeze(0).float()
             a = self.agents[agent].action(o)  # torch.Size([1, action_size])
-            # NOTE that the output is a tensor, convert it to int before input to the environment
-#             actions[agent] = a.squeeze(0).argmax().item()
             actions[agent] = a.squeeze(0).detach().numpy()
-            self.logger.info(f'{agent} action: {actions[agent]}')
+            # self.logger.info(f'{agent} action: {actions[agent]}')
         return actions
 
-    def learn(self, batch_size, gamma):
+    def maddpg_learn(self, batch_size, gamma, agent_id):
+        agent = self.agents[agent_id]
+        obs, act, reward, next_obs, done, next_act = self.sample(batch_size)
+
+        # update critic
+        critic_value = agent.critic_value(list(obs.values()), list(act.values()))
+        # calculate target critic value
+        next_target_critic_value = agent.target_critic_value(list(next_obs.values()), list(next_act.values()))
+        target_value = reward[agent_id] + gamma * next_target_critic_value * (1 - done[agent_id])
+
+        critic_loss = F.mse_loss(critic_value, target_value.detach(), reduction='mean')
+        agent.update_critic(critic_loss)
+
+        # update actor
+        # action of the current agent is calculated using its actor
+        action, logits = agent.action(obs[agent_id], model_out=True)
+        act[agent_id] = action
+        actor_loss = -agent.critic_value(list(obs.values()), list(act.values())).mean()
+        actor_loss_pse = torch.pow(logits, 2).mean()
+        agent.update_actor(actor_loss + 1e-3 * actor_loss_pse)
+        # self.logger.info(f'agent{i}: critic loss: {critic_loss.item()}, actor loss: {actor_loss.item()}')
+
+    def qmix_learn(self, batch_size, gamma):
+        obs, act, reward, next_obs, done, next_act = self.sample(batch_size)
+        
+        # calculate adversary's critic value
+        qs, qs_next, r = [], [], []
         for agent_id, agent in self.agents.items():
-            obs, act, reward, next_obs, done, next_act = self.sample(batch_size)
-            # update critic
-            critic_value = agent.critic_value(list(obs.values()), list(act.values()))
+            if 'adversary' in agent_id:
+                critic_value = agent.critic_value(list(obs.values()), list(act.values()))
+                qs.append(critic_value)
+                next_target_critic_value = agent.target_critic_value(list(next_obs.values()), list(next_act.values()))
+                qs_next.append(next_target_critic_value)
+                rand = torch.rand(2)
+                r.append(reward[agent_id] + rand)
 
-            # calculate target critic value
-            next_target_critic_value = agent.target_critic_value(list(next_obs.values()),
-                                                                 list(next_act.values()))
-            target_value = reward[agent_id] + gamma * next_target_critic_value * (1 - done[agent_id])
+        # calculate mixer value
+        qs, qs_next = torch.cat(qs), torch.cat(qs_next)
+        mixer_value = self.mixer.mixer_value(qs, list(obs.values()), list(act.values()))
+        next_target_mixer_value = self.mixer.target_mixer_value(qs_next, list(next_obs.values()), list(next_act.values()))
 
-            critic_loss = F.mse_loss(critic_value, target_value.detach(), reduction='mean')
-            agent.update_critic(critic_loss)
+        # update mixer and critic
+        r_tot = torch.vstack(r).sum(dim=0, keepdim=False)
+        target_value = r_tot + gamma * next_target_mixer_value
+        critic_mixer_loss = F.mse_loss(mixer_value, target_value.detach(), reduction='mean')
+        self.mixer.update_mixer_critic(critic_mixer_loss)
 
-            # update actor
-            # action of the current agent is calculated using its actor
-            action, logits = agent.action(obs[agent_id], model_out=True)
-            act[agent_id] = action
-            actor_loss = -agent.critic_value(list(obs.values()), list(act.values())).mean()
-            actor_loss_pse = torch.pow(logits, 2).mean()
-            agent.update_actor(actor_loss + 1e-3 * actor_loss_pse)
-            # self.logger.info(f'agent{i}: critic loss: {critic_loss.item()}, actor loss: {actor_loss.item()}')
+        # update actor
+        qs = []
+        for agent_id, agent in self.agents.items():
+            if 'adversary' in agent_id:
+                action, logits = agent.action(obs[agent_id], model_out=True)
+                act[agent_id] = action
+                critic_value = agent.critic_value(list(obs.values()), list(act.values()))
+                qs.append(critic_value)
+        qs = torch.cat(qs)
+        actor_loss = -self.mixer.mixer_value(qs, list(obs.values()), list(act.values())).mean()
+        self.mixer.update_actor(actor_loss)
 
     def update_target(self, tau):
         def soft_update(from_network, to_network):
@@ -121,6 +155,8 @@ class MADDPG:
         for agent in self.agents.values():
             soft_update(agent.actor, agent.target_actor)
             soft_update(agent.critic, agent.target_critic)
+
+        soft_update(self.mixer.mixer, self.mixer.mixer, self.tau)
 
     def save(self, reward):
         """save actor parameters of all agents and training reward to `res_dir`"""

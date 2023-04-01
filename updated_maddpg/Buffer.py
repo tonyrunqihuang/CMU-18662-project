@@ -1,6 +1,5 @@
-import numpy as np
 import torch
-
+import numpy as np
 
 class Buffer:
     """replay buffer for each agent"""

@@ -9,9 +9,7 @@ from utils.misc import soft_update, hard_update, onehot_from_logits, gumbel_soft
 MSELoss = torch.nn.MSELoss()
 
 class Policy:
-    def __init__(self, args, agent_algo, team_algo, team_types,
-                 agent_init_params, mixer_init_params,
-                 gamma=0.95, tau=0.01, discrete_action=False):
+    def __init__(self, args, agent_algo, team_algo, team_types, agent_init_params, mixer_init_params, gamma=0.95, tau=0.01, discrete_action=False):
         self.agents = [Agent(discrete_action=discrete_action, **param) for param in agent_init_params]
         self.mixers = [Mixer(agents=self.agents, **param) for param in mixer_init_params]
         self.agent_algo = agent_algo

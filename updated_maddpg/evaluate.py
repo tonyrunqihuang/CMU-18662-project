@@ -1,21 +1,17 @@
-import argparse
 import os
-
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-
-from MADDPG import MADDPG
+from policy import Policy
 from main import get_env
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('env_name', type=str, default='simple_adversary_v2', help='name of the env',
-                        choices=['simple_adversary_v2', 'simple_spread_v2', 'simple_tag_v2'])
+    parser.add_argument('--env_name', type=str, default='simple_tag_v2', help='name of the env')
     parser.add_argument('folder', type=str, help='name of the folder where model is saved')
     parser.add_argument('--episode-num', type=int, default=10, help='total episode num during evaluation')
     parser.add_argument('--episode-length', type=int, default=50, help='steps per episode')
-
     args = parser.parse_args()
 
     model_dir = os.path.join('./results', args.env_name, args.folder)
@@ -26,7 +22,7 @@ if __name__ == '__main__':
     gif_num = len([file for file in os.listdir(gif_dir)])  # current number of gif
 
     env, dim_info = get_env(args.env_name, args.episode_length)
-    maddpg = MADDPG.load(dim_info, os.path.join(model_dir, 'model.pt'))
+    policy = Policy.load(dim_info, os.path.join(model_dir, 'model.pt'))
 
     agent_num = env.num_agents
     # reward of each episode of each agent
@@ -36,7 +32,7 @@ if __name__ == '__main__':
         agent_reward = {agent: 0 for agent in env.agents}  # agent reward of the current episode
         frame_list = []  # used to save gif
         while env.agents:  # interact with the env for an episode
-            actions = maddpg.select_action(states)
+            actions = policy.select_action(states)
             next_states, rewards, dones, infos = env.step(actions)
             frame_list.append(Image.fromarray(env.render(mode='rgb_array')))
             states = next_states

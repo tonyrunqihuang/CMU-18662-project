@@ -6,8 +6,6 @@ from buffer import Buffer
 from networks import QMixer
 
 class QMIX:
-    """A MADDPG(Multi Agent Deep Deterministic Policy Gradient) agent"""
-
     def __init__(self, dim_info, capacity, typ, actor_lr=0.0001, critic_lr=0.01):
                 
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())

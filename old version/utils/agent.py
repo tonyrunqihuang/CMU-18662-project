@@ -7,8 +7,7 @@ from utils.networks import MLP
 from utils.misc import gumbel_softmax, onehot_from_logits
 
 class Agent:
-    def __init__(self, actor_in_dim, actor_out_dim, critic_in_dim,
-                 type, lr=0.0003, hidden_dim=64, discrete_action=True):
+    def __init__(self, actor_in_dim, actor_out_dim, critic_in_dim, type, lr=0.0003, hidden_dim=64, discrete_action=True):
 
         self.actor = MLP(input_dim=actor_in_dim, output_dim=actor_out_dim,
                          constrain_out=True, discrete_action=discrete_action)
