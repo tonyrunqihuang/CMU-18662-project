@@ -1,15 +1,8 @@
-# maddpg with PyTorch and PettingZoo
-
-The original version of [MADDPG](https://arxiv.org/pdf/1706.02275.pdf)
-use environment of  [multiagent-particle-envs](https://github.com/openai/multiagent-particle-envs),
-which has no longer been updated.
-A maintained version of these environments is provided
-by [PettingZoo](https://github.com/Farama-Foundation/PettingZoo).
-So this repository implement MADDPG using PyTorch and PettingZoo
+# CMU 18662 Course Project - Multi-Agent Reinforcement Learning with Continuous Actions
 
 # Usage
 
-training and evaluation is simple and straightforward, take `simple_tag` for example:
+training and evaluation is simple and straightforward:
 
 ```shell
 python main.py simple_tag_v2  # training
