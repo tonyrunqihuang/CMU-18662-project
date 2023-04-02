@@ -42,7 +42,7 @@ class Policy:
 
         self.batch_size = batch_size
         self.res_dir = res_dir  # directory to save the training result
-        # self.logger = setup_logger(os.path.join(res_dir, 'maddpg.log'))
+        self.logger = setup_logger(os.path.join(res_dir, 'maddpg.log'))
 
     def add(self, obs, action, reward, next_obs, done):
         # NOTE that the experience is a dict with agent name as its key
