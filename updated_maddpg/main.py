@@ -62,7 +62,7 @@ if __name__ == '__main__':
             else:
                 action = policy.select_action(obs)
 
-            next_obs, reward, done, _ = env.step(action)
+            next_obs, reward, done, _, _ = env.step(action)
             # env.render()
             policy.add(obs, action, reward, next_obs, done)
             obs = next_obs

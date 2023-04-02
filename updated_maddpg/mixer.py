@@ -5,7 +5,7 @@ from copy import deepcopy
 from network import QMixer
 
 class QMIX:
-    def __init__(self, dim_info, agents, actor_lr=0.0001, critic_lr=0.01):
+    def __init__(self, dim_info, agents, device, actor_lr=0.0001, critic_lr=0.01):
                 
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         n_agents = 0
@@ -13,8 +13,8 @@ class QMIX:
             if 'adversary' in agent_id:
                 n_agents += 1
 
-        self.mixer = QMixer(state_dim=global_obs_act_dim, n_agents=n_agents)
-        self.target_mixer = deepcopy(self.mixer)
+        self.mixer = QMixer(state_dim=global_obs_act_dim, n_agents=n_agents).to(device)
+        self.target_mixer = deepcopy(self.mixer).to(device)
         self.critic_mixer_param = list(self.mixer.parameters())
         self.actor_param = list()
         for agent_id in agents:

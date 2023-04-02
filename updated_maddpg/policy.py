@@ -1,6 +1,6 @@
 import os
-import logging
 import pickle
+import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -30,13 +30,14 @@ class Policy:
         # create Agent(actor-critic) and replay buffer for each agent
         self.agents = {}
         self.buffers = {}
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
         for agent_id, (obs_dim, act_dim) in dim_info.items():
-            self.agents[agent_id] = Agent(obs_dim, act_dim, global_obs_act_dim, actor_lr, critic_lr)
-            self.buffers[agent_id] = Buffer(capacity, obs_dim, act_dim, 'cpu')
+            self.agents[agent_id] = Agent(obs_dim, act_dim, global_obs_act_dim, actor_lr, critic_lr, device)
+            self.buffers[agent_id] = Buffer(capacity, obs_dim, act_dim, device)
 
         # create mixer for agents using qmix
-        self.mixer = QMIX(dim_info, self.agents)
+        self.mixer = QMIX(dim_info, self.agents, device)
         self.dim_info = dim_info
 
         self.batch_size = batch_size
@@ -83,7 +84,7 @@ class Policy:
         for agent, o in obs.items():
             o = torch.from_numpy(o).unsqueeze(0).float()
             a = self.agents[agent].action(o)  # torch.Size([1, action_size])
-            actions[agent] = a.squeeze(0).detach().numpy()
+            actions[agent] = a.squeeze(0).cpu().detach().numpy()
             # self.logger.info(f'{agent} action: {actions[agent]}')
         return actions
 
@@ -120,8 +121,7 @@ class Policy:
                 qs.append(critic_value)
                 next_target_critic_value = agent.target_critic_value(list(next_obs.values()), list(next_act.values()))
                 qs_next.append(next_target_critic_value)
-                rand = torch.rand(2)
-                r.append(reward[agent_id] + rand)
+                r.append(reward[agent_id])
 
         # calculate mixer value
         qs, qs_next = torch.cat(qs), torch.cat(qs_next)
@@ -156,7 +156,7 @@ class Policy:
             soft_update(agent.actor, agent.target_actor)
             soft_update(agent.critic, agent.target_critic)
 
-        soft_update(self.mixer.mixer, self.mixer.mixer, self.tau)
+        soft_update(self.mixer.mixer, self.mixer.mixer)
 
     def save(self, reward):
         """save actor parameters of all agents and training reward to `res_dir`"""

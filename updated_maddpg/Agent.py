@@ -7,17 +7,14 @@ from typing import List
 from network import MLPNetwork
 
 class Agent:
-    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, typ=None):
-        self.actor = MLPNetwork(obs_dim, act_dim)
-
-        # critic input all the observations and actions
-        # if there are 3 agents for example, the input for critic is (obs1, obs2, obs3, act1, act2, act3)
-        self.critic = MLPNetwork(global_obs_dim, 1)
+    def __init__(self, obs_dim, act_dim, global_obs_dim, actor_lr, critic_lr, device):
+        self.actor = MLPNetwork(obs_dim, act_dim).to(device)
+        self.critic = MLPNetwork(global_obs_dim, 1).to(device)
         self.actor_optimizer = Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = Adam(self.critic.parameters(), lr=critic_lr)
-        self.target_actor = deepcopy(self.actor)
-        self.target_critic = deepcopy(self.critic)
-        self.typ=typ
+        self.target_actor = deepcopy(self.actor).to(device)
+        self.target_critic = deepcopy(self.critic).to(device)
+        self.device = device
 
     @staticmethod
     def gumbel_softmax(logits, tau=1.0, eps=1e-20):
@@ -32,7 +29,7 @@ class Agent:
         # a) interact with the environment
         # b) calculate action when update actor, where input(obs) is sampled from replay buffer with size:
         # torch.Size([batch_size, state_dim])
-
+        obs = obs.to(self.device)
         logits = self.actor(obs)  # torch.Size([batch_size, action_size])
         # action = self.gumbel_softmax(logits)
         action = F.gumbel_softmax(logits, hard=False)
@@ -45,6 +42,7 @@ class Agent:
         # we use target actor to get next action given next states,
         # which is sampled from replay buffer with size torch.Size([batch_size, state_dim])
 
+        obs = obs.to(self.device)
         logits = self.target_actor(obs)  # torch.Size([batch_size, action_size])
         # action = self.gumbel_softmax(logits)
         action = F.gumbel_softmax(logits, hard=False)
