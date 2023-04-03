@@ -73,9 +73,7 @@ if __name__ == '__main__':
                 agent_reward[agent_id] += r
 
             if step >= args.random_steps and step % args.learn_interval == 0:  # learn every few steps
-                for agent_id in env.agents:
-                    if 'agent' in agent_id:
-                        policy.maddpg_learn(args.batch_size, args.gamma, agent_id)
+                policy.maddpg_learn(args.batch_size, args.gamma, 'agent_0')
                 policy.qmix_learn(args.batch_size, args.gamma)
                 policy.update_target(args.tau)
 

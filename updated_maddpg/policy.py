@@ -156,7 +156,7 @@ class Policy:
             soft_update(agent.actor, agent.target_actor)
             soft_update(agent.critic, agent.target_critic)
 
-        soft_update(self.mixer.mixer, self.mixer.mixer)
+        soft_update(self.mixer.mixer, self.mixer.target_mixer)
 
     def save(self, reward):
         """save actor parameters of all agents and training reward to `res_dir`"""

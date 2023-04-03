@@ -5,11 +5,11 @@ from copy import deepcopy
 from network import QMixer
 
 class QMIX:
-    def __init__(self, dim_info, agents, device, actor_lr=0.0001, critic_lr=0.01):
+    def __init__(self, dim_info, agents, device, actor_lr=0.0001, critic_mixer_lr=0.001):
                 
         global_obs_act_dim = sum(sum(val) for val in dim_info.values())
         n_agents = 0
-        for agent_id in dim_info:
+        for agent_id, (obs_dim, act_dim) in dim_info.items():
             if 'adversary' in agent_id:
                 n_agents += 1
 
@@ -17,10 +17,10 @@ class QMIX:
         self.target_mixer = deepcopy(self.mixer).to(device)
         self.critic_mixer_param = list(self.mixer.parameters())
         self.actor_param = list()
-        for agent_id in agents:
+        for agent_id, agent in agents.items():
             if 'adversary' in agent_id:
-                self.critic_mixer_param += list(agents[agent_id].critic.parameters())
-                self.actor_param += list(agents[agent_id].actor.parameters())
+                self.critic_mixer_param += list(agent.critic.parameters())
+                self.actor_param += list(agents.actor.parameters())
 
         self.actor_optimizer = torch.optim.Adam(self.actor_param, lr=0.0001)
         self.critic_mixer_optimizer = torch.optim.Adam(self.critic_mixer_param, lr=0.001)
@@ -43,5 +43,5 @@ class QMIX:
     def update_actor(self, loss):
         self.actor_optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.actor_param, 0.5)
+        torch.nn.utils.clip_grad_norm_(self.actor_param, 0.1)
         self.actor_optimizer.step()

@@ -1,9 +1,8 @@
 import torch
+from torch import nn
 from torch.optim import Adam
-from torch import nn, Tensor
 import torch.nn.functional as F
 from copy import deepcopy
-from typing import List
 
 class MLPNetwork(nn.Module):
     def __init__(self, in_dim, out_dim, hidden_dim=64, non_linear=nn.ReLU()):
@@ -28,7 +27,6 @@ class MLPNetwork(nn.Module):
     def forward(self, x):
         return self.net(x)
     
-
 class QMixer(nn.Module):
     def __init__(self, state_dim, n_agents, output_dim=1, embed_dim=32, hypernet_embed=64):
         super(QMixer, self).__init__()
