@@ -171,7 +171,7 @@ class Policy:
     def load(cls, dim_info, file):
         """init maddpg using the model saved in `file`"""
         instance = cls(dim_info, 0, 0, 0, 0, os.path.dirname(file))
-        data = torch.load(file)
+        data = torch.load(file, map_location ='cpu')
         for agent_id, agent in instance.agents.items():
             agent.actor.load_state_dict(data[agent_id])
         return instance

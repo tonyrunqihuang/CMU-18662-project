@@ -8,8 +8,8 @@ from main import get_env
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', type=str, default='simple_tag_v2', help='name of the env')
     parser.add_argument('folder', type=str, help='name of the folder where model is saved')
+    parser.add_argument('--env_name', type=str, default='simple_tag_v2', help='name of the env')
     parser.add_argument('--episode-num', type=int, default=10, help='total episode num during evaluation')
     parser.add_argument('--episode-length', type=int, default=50, help='steps per episode')
     args = parser.parse_args()
@@ -33,8 +33,9 @@ if __name__ == '__main__':
         frame_list = []  # used to save gif
         while env.agents:  # interact with the env for an episode
             actions = policy.select_action(states)
-            next_states, rewards, dones, infos = env.step(actions)
-            frame_list.append(Image.fromarray(env.render(mode='rgb_array')))
+            next_states, rewards, dones, _, _ = env.step(actions)
+            env.render()
+            frame_list.append(Image.fromarray(env.render()))
             states = next_states
 
             for agent_id, reward in rewards.items():  # update reward

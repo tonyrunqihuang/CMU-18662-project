@@ -7,7 +7,9 @@ from pettingzoo.mpe import simple_tag_v2
 
 def get_env(env_name, ep_len=25):
     """create environment and get observation and action dimension of each agent in this environment"""
-    new_env = simple_tag_v2.parallel_env(max_cycles=ep_len, continuous_actions=True)
+    # new_env = simple_tag_v2.parallel_env(max_cycles=ep_len, continuous_actions=True)
+    new_env = simple_tag_v2.parallel_env(max_cycles=ep_len, continuous_actions=True, render_mode='rgb_array')
+    # new_env = simple_tag_v2.parallel_env(max_cycles=ep_len, continuous_actions=True, render_mode='human')
     new_env.reset()
 
     _dim_info = {}
