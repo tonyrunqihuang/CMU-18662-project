@@ -16,7 +16,8 @@ or simply run `python main.py --help`, `python evaluate.py --help`
 
 |  environment name   | training result                                      | evaluation result                                    |
 |  ----  |------------------------------------------------------|------------------------------------------------------|
-| simple_tag  | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
+| simple_tag (maddpg vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
+| simple_tag (maddpg vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
 
 # reference
 
