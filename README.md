@@ -1,13 +1,25 @@
-# CMU 18662 Principles and Engineering Applications of AI - Project
-Multi-agent Reinforcement Learning
+# CMU 18662 Course Project - Multi-Agent Reinforcement Learning with Continuous Actions
 
-# Requirements:
-1. PyTorch
-2. OpenAI Gym (version=0.10.5): https://github.com/openai/gym
-3. OpenAI Multi-Particle Environment: https://github.com/openai/multiagent-particle-envs
-4. PettingZoo: https://github.com/Farama-Foundation/PettingZoo
+# Usage
 
-# Sources:
-1. Baseline implementation (MADDPG): https://github.com/shariqiqbal2810/maddpg-pytorch
-2. MADDPG paper: https://arxiv.org/abs/1706.02275
-3. QMIX paper: https://arxiv.org/abs/1803.11485
+training and evaluation is simple and straightforward:
+
+```shell
+python main.py simple_tag_v2  # training
+python evaluate.py simple_tag_v2 1  # evaluate result saved in folder 1
+```
+
+more details about arguments can be found in `main.py`, `evaluate.py`
+or simply run `python main.py --help`, `python evaluate.py --help`
+
+# Result
+
+|  environment name   | training result                                      | evaluation result                                    |
+|  ----  |------------------------------------------------------|------------------------------------------------------|
+| simple_tag  | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
+
+# reference
+
+- implementation of [openai](https://github.com/openai/maddpg)
+- implementation of [shariqiqbal2810](https://github.com/openai/maddpg)
+- [maddpg-mpe-pytorch](https://github.com/Git-123-Hub/maddpg-mpe-pytorch)

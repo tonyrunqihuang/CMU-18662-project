@@ -1,30 +1,29 @@
-import argparse
 import os
-from helper import make_env, get_args, set_seed
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from policy import Policy
+from main import get_env
 
-from maddpg import MADDPG
- 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--folder', type=str, help='name of the folder where model is saved')
+    parser.add_argument('folder', type=str, help='name of the folder where model is saved')
+    parser.add_argument('--env_name', type=str, default='simple_tag_v2', help='name of the env')
     parser.add_argument('--episode-num', type=int, default=10, help='total episode num during evaluation')
-    parser.add_argument('--episode-length', type=int, default=25, help='steps per episode')
-
+    parser.add_argument('--episode-length', type=int, default=50, help='steps per episode')
     args = parser.parse_args()
-    args.device='cpu'
-    model_dir = os.path.join('./results', args.folder)
+
+    model_dir = os.path.join('./results', args.env_name, args.folder)
     assert os.path.exists(model_dir)
     gif_dir = os.path.join(model_dir, 'gif')
     if not os.path.exists(gif_dir):
         os.makedirs(gif_dir)
     gif_num = len([file for file in os.listdir(gif_dir)])  # current number of gif
 
-    env, dim_info = make_env(args)
-    maddpg = MADDPG.load(dim_info, os.path.join(model_dir, 'model.pt'))
-    print('Model loaded')
+    env, dim_info = get_env(args.env_name, args.episode_length)
+    policy = Policy.load(dim_info, os.path.join(model_dir, 'model.pt'))
+
     agent_num = env.num_agents
     # reward of each episode of each agent
     episode_rewards = {agent: np.zeros(args.episode_num) for agent in env.agents}
@@ -33,9 +32,10 @@ if __name__ == '__main__':
         agent_reward = {agent: 0 for agent in env.agents}  # agent reward of the current episode
         frame_list = []  # used to save gif
         while env.agents:  # interact with the env for an episode
-            actions = maddpg.select_action(states)
+            actions = policy.select_action(states)
             next_states, rewards, dones, _, _ = env.step(actions)
-            frame_list.append(Image.fromarray(env.render(mode='rgb_array')))
+            env.render()
+            frame_list.append(Image.fromarray(env.render()))
             states = next_states
 
             for agent_id, reward in rewards.items():  # update reward
