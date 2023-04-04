@@ -2,7 +2,7 @@
 
 # Usage
 
-training and evaluation is simple and straightforward:
+Training and evaluation is simple and straightforward, please use the following commands:
 
 ```shell
 python main.py simple_tag_v2  # training
