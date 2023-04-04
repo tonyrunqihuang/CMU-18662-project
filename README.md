@@ -1,5 +1,10 @@
 # CMU 18662 Course Project - Multi-Agent Reinforcement Learning with Continuous Actions
 
+# TODO
+
+1. Update on results sections in README
+2. Final paper and presentation
+
 # Usage
 
 Training and evaluation is simple and straightforward, please use the following commands:
@@ -17,7 +22,7 @@ or simply run `python main.py --help`, `python evaluate.py --help`
 |  environment name   | training result                                      | evaluation result                                    |
 |  ----  |------------------------------------------------------|------------------------------------------------------|
 | simple_tag (maddpg vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
-| simple_tag (maddpg vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
+| simple_tag (qmix vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
 
 # reference
 
