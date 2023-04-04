@@ -24,8 +24,10 @@ or simply run `python main.py --help`, `python evaluate.py --help`
 | simple_tag (maddpg vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
 | simple_tag (qmix vs. maddpg) | ![simple_tag](archive/simple_tag_v2.png)             | ![simple_tag](archive/simple_tag_v2.gif)             | 
 
-# reference
+# Reference
 
-- implementation of [openai](https://github.com/openai/maddpg)
-- implementation of [shariqiqbal2810](https://github.com/openai/maddpg)
-- [maddpg-mpe-pytorch](https://github.com/Git-123-Hub/maddpg-mpe-pytorch)
+- Implementation of [openai](https://github.com/openai/maddpg)
+- Implementation of [shariqiqbal2810](https://github.com/openai/maddpg)
+- Implementation of [maddpg-mpe-pytorch](https://github.com/Git-123-Hub/maddpg-mpe-pytorch)
+- Implementation of [PettingZoo](https://github.com/Farama-Foundation/PettingZoo)
+- Implementation of [maddpg-mpe-pytorch](https://github.com/Git-123-Hub/maddpg-pettingzoo-pytorch) with Pettingzoo
