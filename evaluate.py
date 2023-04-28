@@ -2,6 +2,7 @@ import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+
 from PIL import Image
 from policy import Policy
 from main import get_env

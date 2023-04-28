@@ -2,6 +2,7 @@ import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+
 from policy import Policy
 from pettingzoo.mpe import simple_tag_v2
 

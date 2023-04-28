@@ -1,7 +1,9 @@
 import torch
+import torch.nn.functional as F
+
 from torch import nn
 from torch.optim import Adam
-import torch.nn.functional as F
+
 from copy import deepcopy
 
 class MLPNetwork(nn.Module):
