@@ -1,6 +1,7 @@
 import torch
 from torch.optim import Adam
-from torch import nn, Tensor
+from torch import nn
+from torch import Tensor
 import torch.nn.functional as F
 from copy import deepcopy
 from typing import List
